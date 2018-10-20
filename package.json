@@ -1,0 +1,22 @@
+{
+  "name": "piskel-cli",
+  "version": "1.0.0",
+  "description": "Wraps the Piskel pixel editing application to enable similar export options via the command line.",
+  "main": "index.js",
+  "bin": {
+    "piskel-cli": "index.js"
+  },
+  "scripts": {
+    "prepare": "cd node_modules/piskel && npm install && grunt build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jordan J Watkins",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "piskel": "https://github.com/piskelapp/piskel/tarball/master"
+  },
+  "devDependencies": {
+    "eslint": "^5.7.0"
+  }
+}
