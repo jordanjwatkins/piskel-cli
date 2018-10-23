@@ -25,6 +25,15 @@ function onPageEvaluate(window, options, piskel) {
         piskel = piskelController.getPiskel();
     }
 
+    // Use output name without path as piskel name instead of descriptor name
+    piskelController.getPiskel().getDescriptor = function () {
+        var lastIndexOfSlash = options.output.lastIndexOf('/') > -1 ?
+            options.output.lastIndexOf('/') + 1 :
+            0;
+
+        return { name: options.output.slice(lastIndexOfSlash) };
+    };
+
     // Mock exportController to provide zoom value based on cli args
     // and to avoid errors and/or unnecessary bootstrapping
     var exportController = {
@@ -60,8 +69,10 @@ function onPageEvaluate(window, options, piskel) {
             return Math.ceil(piskelController.getFrameCount() / pngExportController.getColumns_());
         }
 
-        return options.rows;
+        return options.rows || 1;
     };
+
+    if (options.pixiMovie) window.piskelCli.exportPixiMovie(pngExportController);
 
     // Render to output canvas
     var canvas;
@@ -87,7 +98,8 @@ function onPageEvaluate(window, options, piskel) {
     // Prepare return data
     const returnData = {
         width: canvas.width,
-        height: canvas.height
+        height: canvas.height,
+        pixiMovieZip: JSON.stringify(window.mockJSZip)
     };
 
     // Wait a tick for things to wrap up
@@ -112,15 +124,32 @@ function onPageExit(page, options, data) {
 
     console.log(' ' + output);
 
+    const dataUri = 'data:image/png;base64,' + page.renderBase64('PNG');
+
     if (options.dataUri) {
         const dataUriPath = options.output + '.datauri';
-
-        const dataUri = 'data:image/png;base64,' + page.renderBase64('PNG');
 
         // Write data-uri to file
         fs.write(dataUriPath, dataUri, 'w');
 
         console.log(' ' + dataUriPath);
+    }
+
+    if (data.pixiMovieZip) {
+         // Get pixi movie json file info
+        const fileToZip = JSON.parse(data.pixiMovieZip).files[1];
+
+        // Write pixi movie json file
+        fs.write(fileToZip.name, fileToZip.data, 'w');
+
+        // Create zip manifest
+        const zipManifest = JSON.stringify(JSON.parse(data.pixiMovieZip).files.map(function (file) {
+            return file.name;
+        }));
+
+        fs.write('zip-manifest.json', zipManifest, 'w');
+
+        console.log(' ' + options.output + '.zip');
     }
 }
 
