@@ -19,6 +19,8 @@ page.content = '<html><body></body></html>';
 // Inject Piskel JS
 page.injectJs(options.piskelAppJsPath);
 
+page.injectJs('export-pixi-movie.js');
+
 // Listen for page console logs
 page.onConsoleMessage = function (msg) {
     if (!args.quiet) console.log(msg);

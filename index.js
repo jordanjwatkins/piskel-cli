@@ -6,6 +6,7 @@ const minimist = require('minimist');
 const childProcess = require('child_process');
 const phantomjs = require('piskel/node_modules/phantomjs');
 const binPath = phantomjs.path;
+const JSZip = require('jszip');
 
 // Parse command args
 let args = minimist(process.argv.slice(2), {
@@ -13,8 +14,9 @@ let args = minimist(process.argv.slice(2), {
     crop: false,
     dataUri: false,
     debug: false,
-    scale: 1,
-    quiet: false
+    pixiMovie: false,
+    quiet: false,
+    scale: 1
   }
 });
 
@@ -79,7 +81,8 @@ const options = {
   dataUri: !!args.dataUri,
   debug: args.debug,
   scaledWidth: args.scaledWidth,
-  scaledHeight: args.scaledHeight
+  scaledHeight: args.scaledHeight,
+  pixiMovie: !!args.pixiMovie
 };
 
 const childArgs = [
@@ -105,6 +108,31 @@ childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
   if (err) console.log(err);
   if (stderr) console.log(stderr);
   if (stdout) console.log(stdout);
+
+  if (args.pixiMovie) {
+    // Create final zip for PixiJS Movie export
+    const zipManifest = JSON.parse(fs.readFileSync('zip-manifest.json', 'utf-8'));
+
+    const zip = new JSZip();
+
+    zipManifest.forEach(function (filename) {
+      if (filename.indexOf('.png') > -1) {
+        zip.file(path.basename(filename), fs.readFileSync(filename), { binary: true });
+      } else {
+        zip.file(path.basename(filename), fs.readFileSync(filename));
+
+        fs.unlinkSync(filename);
+      }
+    });
+
+    zip.generateAsync({
+      type : 'nodebuffer'
+    }).then(function (zipped) {
+      fs.writeFileSync(options.output.replace('.png', '') + '.zip', zipped, 'utf-8');
+    });
+
+    fs.unlinkSync('zip-manifest.json');
+  }
 
   console.log('Export complete');
 });
