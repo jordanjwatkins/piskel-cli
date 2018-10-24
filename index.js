@@ -117,9 +117,10 @@ childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
 
     zipManifest.forEach(function (filename) {
       if (filename.indexOf('.png') > -1) {
-        zip.file(path.basename(filename), fs.readFileSync(args.output), { binary: true });
+        zip.file(path.basename(filename), fs.readFileSync(filename), { binary: true });
       } else {
         zip.file(path.basename(filename), fs.readFileSync(filename));
+
         fs.unlinkSync(filename);
       }
     });
@@ -127,7 +128,7 @@ childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
     zip.generateAsync({
       type : 'nodebuffer'
     }).then(function (zipped) {
-      fs.writeFileSync(args.output.replace('.png', '') + '.zip', zipped, 'utf-8');
+      fs.writeFileSync(options.output.replace('.png', '') + '.zip', zipped, 'utf-8');
     });
 
     fs.unlinkSync('zip-manifest.json');

@@ -8,8 +8,6 @@ window.piskelCli.exportPixiMovie = function (pngExportController) {
         this.files = [];
 
         this.file = function (name, data, options) {
-            console.log(name, options);
-
             this.files.push({
                 name: name,
                 data: data,
