@@ -1,4 +1,5 @@
-const fs = require('fs');
+var fs = require('fs');
+var exportPixiMovie = require('./export-pixi-movie.js');
 
 function onPageEvaluate(window, options, piskel) {
     console.log('\nPiskel name: ' + piskel.descriptor.name);
@@ -72,7 +73,8 @@ function onPageEvaluate(window, options, piskel) {
         return options.rows || 1;
     };
 
-    if (options.pixiMovie) window.piskelCli.exportPixiMovie(pngExportController);
+    // Optionally prepare to export a pixi movie zip
+    var pixiMovieZip = (options.pixiMovie) ? window.piskelCli.exportPixiMovie.onPageEvaluate(pngExportController, options) : null;
 
     // Render to output canvas
     var canvas;
@@ -96,14 +98,14 @@ function onPageEvaluate(window, options, piskel) {
     window.document.body.appendChild(canvas);
 
     // Prepare return data
-    const returnData = {
+    var returnData = {
         width: canvas.width,
         height: canvas.height,
-        pixiMovieZip: JSON.stringify(window.mockJSZip)
+        pixiMovieZip: pixiMovieZip
     };
 
     // Wait a tick for things to wrap up
-    setTimeout(function ()  {
+    setTimeout(function () {
         // Exit and pass data to parent process
         window.callPhantom(returnData);
     }, 0);
@@ -124,9 +126,8 @@ function onPageExit(page, options, data) {
 
     console.log(' ' + output);
 
-    const dataUri = 'data:image/png;base64,' + page.renderBase64('PNG');
-
     if (options.dataUri) {
+        const dataUri = 'data:image/png;base64,' + page.renderBase64('PNG');
         const dataUriPath = options.output + '.datauri';
 
         // Write data-uri to file
@@ -136,20 +137,7 @@ function onPageExit(page, options, data) {
     }
 
     if (data.pixiMovieZip) {
-         // Get pixi movie json file info
-        const fileToZip = JSON.parse(data.pixiMovieZip).files[1];
-
-        // Write pixi movie json file
-        fs.write(fileToZip.name, fileToZip.data, 'w');
-
-        // Create zip manifest
-        const zipManifest = JSON.stringify(JSON.parse(data.pixiMovieZip).files.map(function (file) {
-            return file.name;
-        }));
-
-        fs.write('zip-manifest.json', zipManifest, 'w');
-
-        console.log(' ' + options.output + '.zip');
+        exportPixiMovie.onPageExit(page, options, data);
     }
 }
 
