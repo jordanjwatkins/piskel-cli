@@ -4,9 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const minimist = require('minimist');
 const childProcess = require('child_process');
-const phantomjs = require('piskel/node_modules/phantomjs');
-const binPath = phantomjs.path;
+const phantomjs = require('phantomjs');
 const JSZip = require('jszip');
+const binPath = phantomjs.path;
 
 // Parse command args
 let args = minimist(process.argv.slice(2), {
@@ -58,7 +58,7 @@ if (args.output) {
 output = output.replace(/[\\/]$/, '');
 
 // Get path to Piskel's app js bundle
-let piskelAppJsDir = path.resolve(__dirname +'/node_modules/piskel/dest/prod/js/');
+let piskelAppJsDir = path.resolve(__dirname +'/piskel');
 let minJsFiles = fs.readdirSync(piskelAppJsDir).filter(filename => filename.indexOf('min') > -1);
 let piskelAppJsFileName = minJsFiles[0];
 let piskelAppJsPath = (piskelAppJsFileName) ? path.join(piskelAppJsDir, piskelAppJsFileName) : '';
