@@ -96,6 +96,8 @@ if (args.debug) {
         '--remote-debugger-port=9035',
         '--remote-debugger-autorun=yes'
     );
+
+    console.log('\nDebug console: http://localhost:9035/webkit/inspector/inspector.html?page=1\n');
 }
 
 if (!args.quiet) console.log('Piskel CLI is exporting...');
