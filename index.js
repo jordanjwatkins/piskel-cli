@@ -104,12 +104,14 @@ if (!args.quiet) console.log('Piskel CLI is exporting...');
 
 // Run phantom script
 childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
-    if (args.quiet) return;
+    if (args.debug || !args.quiet) {
+        // Print any output the from child process
+        if (err) console.log(err);
+        if (stderr) console.log(stderr);
+        if (stdout) console.log(stdout);
 
-    // Print any output the from child process
-    if (err) console.log(err);
-    if (stderr) console.log(stderr);
-    if (stdout) console.log(stdout);
+        console.log('Export complete');
+    }
 
     if (args.pixiMovie) {
         // Create final zip for PixiJS Movie export
@@ -135,6 +137,4 @@ childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
 
         fs.unlinkSync('zip-manifest.json');
     }
-
-    console.log('Export complete');
 });
