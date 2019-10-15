@@ -121,7 +121,7 @@ childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
 
         zipManifest.forEach(function (filename) {
             if (filename.indexOf('.png') > -1) {
-                zip.file(path.basename(filename), fs.readFileSync(filename), { binary: true });
+                zip.file(path.basename(filename), fs.readFileSync(options.output + '.png'), { binary: true });
             } else {
                 zip.file(path.basename(filename), fs.readFileSync(filename));
 
