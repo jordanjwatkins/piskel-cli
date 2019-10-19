@@ -26,7 +26,7 @@ if (args.debug) console.log(args);
 if (!args._ || (args._ && !args._.length)) {
     console.error('Path to a .piskel file is required');
 
-    return;
+    process.exit(1);
 }
 
 let src = args._[0];
@@ -38,7 +38,7 @@ src = src.replace('.piskel', '') + '.piskel';
 if (!fs.existsSync(src)) {
     console.error('No such file: ' + src);
 
-    return;
+    process.exit(1);
 }
 
 // Read src piskel file
@@ -66,7 +66,7 @@ let piskelAppJsPath = (piskelAppJsFileName) ? path.join(piskelAppJsDir, piskelAp
 if (!fs.existsSync(piskelAppJsPath)) {
     console.error(`Piskel's application JS file not found in: ${piskelAppJsDir}. Run prod build and try again.`);
 
-    return;
+    process.exit(1);
 }
 
 // Prepare args to pass to phantom script
@@ -103,38 +103,36 @@ if (args.debug) {
 if (!args.quiet) console.log('Piskel CLI is exporting...');
 
 // Run phantom script
-childProcess.execFile(binPath, childArgs, function (err, stdout, stderr) {
-    if (args.debug || !args.quiet) {
-        // Print any output the from child process
-        if (err) console.log(err);
-        if (stderr) console.log(stderr);
-        if (stdout) console.log(stdout);
+const phantomProcess = childProcess.execFileSync(binPath, childArgs);
 
-        console.log('Export complete');
-    }
+// Print phantom script output
+console.log(phantomProcess.toString());
 
-    if (args.pixiMovie) {
-        // Create final zip for PixiJS Movie export
-        const zipManifest = JSON.parse(fs.readFileSync('zip-manifest.json', 'utf-8'));
+if (args.pixiMovie) {
+    // Create final zip for PixiJS Movie export
+    const zipManifest = JSON.parse(fs.readFileSync('zip-manifest.json', 'utf-8'));
 
-        const zip = new JSZip();
+    const zip = new JSZip();
 
-        zipManifest.forEach(function (filename) {
-            if (filename.indexOf('.png') > -1) {
-                zip.file(path.basename(filename), fs.readFileSync(options.output + '.png'), { binary: true });
-            } else {
-                zip.file(path.basename(filename), fs.readFileSync(filename));
+    zipManifest.forEach(function (filename) {
+        if (filename.indexOf('.png') > -1) {
+            zip.file(path.basename(filename), fs.readFileSync(options.output + '.png'), { binary: true });
+        } else {
+            zip.file(path.basename(filename), fs.readFileSync(filename));
 
-                fs.unlinkSync(filename);
-            }
-        });
+            fs.unlinkSync(filename);
+        }
+    });
 
-        zip.generateAsync({
-            type : 'nodebuffer'
-        }).then(function (zipped) {
-            fs.writeFileSync(options.output.replace('.png', '') + '.zip', zipped, 'utf-8');
-        });
+    zip.generateAsync({
+        type : 'nodebuffer'
+    }).then(function (zipped) {
+        fs.writeFileSync(options.output.replace('.png', '') + '.zip', zipped, 'utf-8');
+    });
 
-        fs.unlinkSync('zip-manifest.json');
-    }
-});
+    fs.unlinkSync('zip-manifest.json');
+}
+
+if (!args.quiet) console.log('Export complete...');
+
+process.exit(0);
