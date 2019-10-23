@@ -19,6 +19,9 @@ beforeEach(() => {
     exit = jest.spyOn(process, 'exit').mockImplementation(() => {
         throw new Error('exit');
     });
+
+    // New process.argv for each test
+    process.argv = ['', ''];
 });
 
 afterEach(() => {
