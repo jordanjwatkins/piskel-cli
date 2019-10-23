@@ -4,7 +4,8 @@ module.exports = {
     env: {
         browser: true,
         es6: true,
-        node: true
+        node: true,
+        jest: true
     },
 
     globals: {
@@ -12,8 +13,12 @@ module.exports = {
         phantom: true
     },
 
+    plugins: ["jest"],
+
     rules: {
         "no-console": "off",
+        "comma-dangle": ["error", "never"],
+        "object-curly-spacing": ["error", "always"],
         "quotes": ["error", "single"],
         "semi": ["error", "always"]
     }
